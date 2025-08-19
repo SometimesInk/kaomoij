@@ -1,13 +1,22 @@
+#include <stdio.h>
 #include <windows.h>
 
-#include "config.h"
-#include "../window.h"
+#include "io/config.h"
+#include "io/file.h"
+#include "window/window.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                    LPSTR lpCmdLine, int nCmdShow) {
     // Initialize config
-    parse_conf();
+    if (!init_file_system()) {
+        (void) printf("INIT ERR WinMain: Failed to initialize file system.");
+        return 0;
+    }
+    if (!parse_conf()) {
+        (void) printf("INIT ERR WinMain: Failed to parse config.");
+        return 0;
+    }
 
     // Initialize window
-    return init_win(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    return init_win(hInstance);
 }

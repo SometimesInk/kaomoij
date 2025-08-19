@@ -5,7 +5,8 @@
 #ifndef KAOMOIJ_CONFIG_H
 #define KAOMOIJ_CONFIG_H
 
-#include "keybind.h"
+#include "../util/keybind.h"
+#include "../util/type.h"
 
 typedef enum e_window_display_corner {
     TOP_LEFT,
@@ -16,8 +17,9 @@ typedef enum e_window_display_corner {
 
 typedef struct s_config {
     t_win_corner corner; // win_corner
-    short width; // win_width
-    short height; // win_height
+    t_u8 width; // win_width
+    t_u8 height; // win_height
+    t_u8 cols; // win_cols
     t_keybind launch; // bind_launch
 } t_conf;
 

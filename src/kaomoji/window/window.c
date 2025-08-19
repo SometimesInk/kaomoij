@@ -2,19 +2,17 @@
 // Created by panda on 8/18/2025.
 //
 
-#include "../window.h"
-
 #include <stdio.h>
 
-#include "config.h"
+#include "../io/config.h"
 #include "message.h"
 
 const char g_szClassName[] = "windowClass";
 
-int _get_win_class(WNDCLASSEX *win_class, HINSTANCE hInstance) {
+int _get_win_class(WNDCLASSEX *win_class, const HINSTANCE hInstance) {
     win_class->cbSize = sizeof(WNDCLASSEX);
     win_class->style = 0;
-    win_class->lpfnWndProc = WndProc;
+    win_class->lpfnWndProc = win_proc;
     win_class->cbClsExtra = 0;
     win_class->cbWndExtra = 0;
     win_class->hInstance = hInstance;
@@ -26,14 +24,14 @@ int _get_win_class(WNDCLASSEX *win_class, HINSTANCE hInstance) {
     win_class->hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
     if (!RegisterClassEx(win_class)) {
-        printf("WIN ERR @ _get_win_class: Failed to register window class. See last error: '%lu'.",
+        (void)printf("WIN ERR @ _get_win_class: Failed to register window class. See last error: '%lu'.\n",
                GetLastError());
         return 0;
     }
     return 1;
 }
 
-int _get_win_handle(HWND *win_handle, HINSTANCE hInstance) {
+int _get_win_handle(HWND *win_handle, const HINSTANCE hInstance) {
     *win_handle = CreateWindowEx(
         WS_EX_CLIENTEDGE,
         g_szClassName,
@@ -43,7 +41,7 @@ int _get_win_handle(HWND *win_handle, HINSTANCE hInstance) {
         NULL, NULL, hInstance, NULL);
 
     if (*win_handle == NULL) {
-        printf("WIN ERR @ _get_win_handle: Failed to create window handle. See last error: '%lu'.",
+        (void)printf("WIN ERR @ _get_win_handle: Failed to create window handle. See last error: '%lu'.\n",
                GetLastError());
         return 0;
     }
@@ -60,29 +58,35 @@ void _win_loop(MSG *win_msg) {
     }
 }
 
-int init_win(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int init_win(const HINSTANCE hInstance) {
     // Initialize window class
     WNDCLASSEX win_class;
     if (!_get_win_class(&win_class, hInstance)) {
-        printf("ERR @ init_win: Failed to initialize window class.");
+        (void)printf("ERR @ init_win: Failed to initialize window class.\n");
         return 0;
     }
 
     // Initialize handle
     HWND win_handle;
     if (!_get_win_handle(&win_handle, hInstance)) {
-        printf("ERR @ init_win: Failed to initialize window handle.");
+        (void)printf("ERR @ init_win: Failed to initialize window handle.\n");
         return 0;
     }
 
     // Register keybinds
-    register_keybind(conf.launch, win_handle);
+    if (!register_keybind(conf.launch, win_handle)) {
+        (void)printf("ERR @ init_win: Failed to register launch keybind.\n");
+        return 0;
+    }
 
     // Enter window loop
+    (void)printf("Ready.\n");
     MSG win_msg;
     _win_loop(&win_msg);
 
     // Deconstruct
-    unregister_keybind(conf.launch, win_handle);
+    if (unregister_keybind(conf.launch, win_handle)) {
+        (void)printf("ERR @ init_win: Failed to unregister launch keybind.\n");
+    }
     return win_msg.wParam;
 }

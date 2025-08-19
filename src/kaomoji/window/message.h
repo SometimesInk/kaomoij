@@ -6,8 +6,8 @@
 #define KAOMOIJ_MESSAGE_H
 #include <windows.h>
 
-extern int appear_window(HWND hwnd);
+extern int toggle_win(HWND win_handle);
 
-extern LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern LRESULT CALLBACK win_proc(HWND win_handle, UINT win_msg, WPARAM w_param, LPARAM l_param);
 
 #endif //KAOMOIJ_MESSAGE_H

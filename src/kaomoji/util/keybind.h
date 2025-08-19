@@ -4,7 +4,7 @@
 
 #ifndef KAOMOIJ_KEYBIND_H
 #define KAOMOIJ_KEYBIND_H
-#include "message.h"
+#include "../window/message.h"
 
 typedef struct s_keybind {
     int id;
