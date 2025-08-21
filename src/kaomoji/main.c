@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include "io/config.h"
+#include "io/entry.h"
 #include "io/file.h"
 #include "window/window.h"
 
@@ -14,6 +15,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     if (!parse_conf()) {
         (void) printf("INIT ERR WinMain: Failed to parse config.");
+        return 0;
+    }
+    if (!parse_entries()) {
+        (void) printf("INIT ERR WinMain: Failed to initialize file system.");
         return 0;
     }
 

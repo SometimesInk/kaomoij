@@ -12,42 +12,42 @@
 #include "file.h"
 
 t_conf conf = {
-    TOP_RIGHT, 240, 120, 3,
+    TOP_RIGHT, 240, 120, 3, 6,
     {1, MOD_CONTROL | MOD_ALT, 'A'}
 };
 
-int _split_kv(struct _s_kvp *out, const char *str) {
-    const char *eq = strchr(str, '=');
+int _split_kv(struct _s_kvp *out, const wchar_t *str) {
+    const wchar_t *eq = wcschr(str, L'=');
     if (eq == NULL) {
         (void) printf("NULL ERR @ _split_kv: No '=' sign found.\n");
         return 0;
     }
 
     // Key
-    out->k_len = eq - str;
-    out->k = malloc(out->k_len + 1);
-    if (out->k == NULL) {
+    out->len_k = eq - str;
+    out->d_k = malloc(out->len_k + 1);
+    if (out->d_k == NULL) {
         (void) printf("MEM ERR @ _split_kv: Count not alloc mem to key.\n");
         return 0;
     }
-    strncpy(out->k, str, out->k_len);
-    out->k[out->k_len] = L'\0';
+    (void) wcsncpy(out->d_k, str, out->len_k);
+    out->d_k[out->len_k] = L'\0';
 
     // Value
-    const char *v = eq + 1;
-    out->v_len = strlen(v);
-    out->v = malloc(out->v_len + 1);
-    if (out->v == NULL) {
-        free(out->k);
+    const wchar_t *v = eq + 1;
+    out->len_v = wcslen(v);
+    out->d_v = malloc(out->len_v + 1);
+    if (out->d_v == NULL) {
+        free(out->d_k);
         (void) printf("MEM ERR @ _split_kv: Count not alloc mem to value.\n");
         return 0;
     }
-    strcpy(out->v, v);
+    (void) wcscpy(out->d_v, v);
 
     return 1;
 }
 
-int _parse_conf_line(size_t len, const char *line) {
+int _parse_conf_line(size_t len, const wchar_t *line) {
     // Get kvp from line
     struct _s_kvp kvp;
     if (!_split_kv(&kvp, line)) {
@@ -56,23 +56,37 @@ int _parse_conf_line(size_t len, const char *line) {
     }
 
     // Parse key
-    if (strcmp(kvp.k, "win_corner") == 0) {
-        const long corner = strtol(kvp.v, NULL, 10);
+    if (wcscmp(kvp.d_k, L"win_corner") == 0) {
+        const long corner = wcstol(kvp.d_v, NULL, 10);
         conf.corner = corner;
-    } else if (strcmp(kvp.k, "win_width") == 0) {
-        const long width = strtol(kvp.v, NULL, 10);
+    } else if (wcscmp(kvp.d_k, L"win_width") == 0) {
+        const long width = wcstol(kvp.d_v, NULL, 10);
         conf.width = width;
-    } else if (strcmp(kvp.k, "win_height") == 0) {
-        const long height = strtol(kvp.v, NULL, 10);
+    } else if (wcscmp(kvp.d_k, L"win_height") == 0) {
+        const long height = wcstol(kvp.d_v, NULL, 10);
         conf.height = height;
+    } else if (wcscmp(kvp.d_k, L"win_cols") == 0) {
+        const long cols = wcstol(kvp.d_v, NULL, 10);
+        conf.cols = cols;
+    } else if (wcscmp(kvp.d_k, L"win_rows") == 0) {
+        const long rows = wcstol(kvp.d_v, NULL, 10);
+        conf.rows = rows;
+    } else if (wcscmp(kvp.d_k, L"bind_launch") == 0) {
+        t_keybind launch;
+        string_to_keybind(&launch, kvp.d_v);
+        conf.launch = launch;
     } else {
-        (void) printf("ERR @ _parse_conf_line: Key '%s' not found.\n", kvp.k);
+        (void) printf("ERR @ _parse_conf_line: Key '%ws' not found.\n", kvp.d_k);
+        free(kvp.d_k);
+        free(kvp.d_v);
         return 0;
     }
+    free(kvp.d_k);
+    free(kvp.d_v);
     return 1;
 }
 
-int _parse_conf_content(size_t len, char *content) {
+int _parse_conf_content(size_t len, wchar_t *content) {
     if (len < 1) {
         (void) printf("WARN @ _parse_conf_content: No content to be parsed.\n");
         return 0;
@@ -80,10 +94,10 @@ int _parse_conf_content(size_t len, char *content) {
 
     // Read conf line by line
     int line_num = 0;
-    const char *str = strtok(content, "\n");
+    const wchar_t *str = wcstok(content, L"\n");
     while (str != NULL) {
         line_num++;
-        const size_t str_len = strlen(str);
+        const size_t str_len = wcslen(str);
 
         // Skip comments and empty line
         if (str_len > 1 && str[0] != '#') {
@@ -92,7 +106,7 @@ int _parse_conf_content(size_t len, char *content) {
             }
         }
 
-        str = strtok(NULL, "\n");
+        str = wcstok(NULL, L"\n");
     }
 
     return 1;
@@ -101,12 +115,25 @@ int _parse_conf_content(size_t len, char *content) {
 int parse_conf() {
     // Get config file location
     t_path dir;
-    get_data_path(&dir, L"config.txt");
+    if (!get_data_path(&dir, L"config.wtxt")) {
+        (void) printf("ERR @ parse_conf: Error getting file path.\n");
+        return 0;
+    }
+
+    // Get default config file location
+    t_path default_dir;
+    if (!get_resource_path(&default_dir, L"config\\config.wtxt")) {
+        (void) printf("ERR @ parse_conf: Error getting default file path.\n");
+        return 0;
+    }
 
     // Read file contents
     size_t len;
-    char *d_content;
-    read_file(dir, &len, &d_content);
+    wchar_t *d_content;
+    if (!read_file(dir, default_dir, &len, &d_content)) {
+        (void) printf("ERR @ parse_conf: Error reading file.\n");
+        return 0;
+    }
 
     // Parse file contents
     if (!_parse_conf_content(len, d_content)) {

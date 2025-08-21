@@ -5,6 +5,8 @@
 #ifndef KAOMOIJ_WINDOW_H
 #define KAOMOIJ_WINDOW_H
 
+#include <windows.h>
+
 extern int _get_win_class(WNDCLASSEX *win_class, HINSTANCE hInstance);
 
 extern int _get_win_handle(HWND *win_handle, HINSTANCE hInstance);

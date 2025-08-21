@@ -7,6 +7,7 @@
 #include <minwindef.h>
 
 typedef wchar_t t_path[MAX_PATH];
-typedef unsigned char t_u8;
+
+typedef unsigned short t_u16;
 
 #endif //KAOMOIJ_TYPE_H
