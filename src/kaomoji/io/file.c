@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define BOM 0xFEFF
+//#define HEX_DUMP
 
 t_path local_app_data;
 t_path resources_data_dir;
@@ -101,7 +101,7 @@ int read_file_no_default(t_path dir, size_t *len, wchar_t **d_content) {
     }
 
     *len = (size_t) size.QuadPart / sizeof(wchar_t);
-    *d_content = (wchar_t *) malloc((*len + 1) *  sizeof(wchar_t));
+    *d_content = (wchar_t *) malloc((*len + 1) * sizeof(wchar_t));
     if (*d_content == NULL) {
         (void) printf("MEM ERR @ read_file_no_default: "
                       "Failed to allocate memory for file at @ '%ls' contents.\n", dir);
@@ -130,6 +130,23 @@ dispose:
                       GetLastError());
     }
     return 0;
+}
+
+void flip_endian(wchar_t *buf, const size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        wchar_t v = buf[i];
+        buf[i] = (wchar_t) (v >> 8 | v << 8);
+    }
+}
+
+void hex_dump(const wchar_t *buf, const size_t len) {
+    // Hex dump
+#ifdef HEX_DUMP
+    for (int i = 0; i < len && buf[i] != L'\0'; i++) {
+        (void) printf("%04X ", buf[i]);
+    }
+    (void) printf("\nHexdump over.\n");
+#endif
 }
 
 int read_file(t_path dir, t_path default_data, size_t *len, wchar_t **d_content) {
@@ -171,21 +188,16 @@ int read_file(t_path dir, t_path default_data, size_t *len, wchar_t **d_content)
     }
 
     // Get file size
-    LARGE_INTEGER size;
-    if (!GetFileSizeEx(file, &size)) {
+    DWORD size = GetFileSize(file, NULL);
+    const size_t wchar_count = size / sizeof(wchar_t);
+    if (size == INVALID_FILE_SIZE) {
         (void) printf("IO ERR @ read_file: Could not get the size of file '%ls'. See last error: '%lu'.\n",
                       dir, GetLastError());
         goto dispose;
     }
 
-    if (size.QuadPart > SIZE_MAX) {
-        (void) printf("ERR @ read_file: Size of file '%ls' is to too large to be allocated.\n", dir);
-        goto dispose;
-    }
-
     // Allocate memory for content
-    *len = size.QuadPart / sizeof(wchar_t);
-    *d_content = (wchar_t *) malloc((*len + 1) * sizeof(wchar_t));
+    *d_content = malloc((wchar_count + 1) * sizeof(wchar_t));
     if (*d_content == NULL) {
         (void) printf("MEM ERR @ read_file: Failed to allocate memory for file at @ '%ls' contents.\n", dir);
         goto dispose;
@@ -193,13 +205,25 @@ int read_file(t_path dir, t_path default_data, size_t *len, wchar_t **d_content)
 
     // Read file
     DWORD read = 0;
-    if (!ReadFile(file, *d_content, size.QuadPart, &read, NULL)) {
+    if (!ReadFile(file, *d_content, size, &read, NULL)) {
         free(*d_content);
         (void) printf("IO ERR @ read_file: Could not read file '%ls'. See last error: '%lu'.\n",
                       dir, GetLastError());
         goto dispose;
     }
-    (*d_content)[read / sizeof(wchar_t)] = L'\0';
+    (*d_content)[wchar_count] = L'\0';
+
+    hex_dump(*d_content, wchar_count);
+
+    // Detect encoding
+    if ((*d_content)[0] == 0xFFFE) {
+        // File is BE
+        flip_endian(*d_content, wchar_count);
+    }
+
+    hex_dump(*d_content, wchar_count);
+
+    *len = wchar_count;
 
     if (!CloseHandle(file)) {
         (void) printf("IO ERR @ read_file: Failed to close file handle. See last error: '%lu'.\n",

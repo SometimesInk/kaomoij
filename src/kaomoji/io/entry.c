@@ -16,8 +16,8 @@ wchar_t *_parse_entry(const size_t len, const wchar_t *start) {
     // Allocate memory for entry
     wchar_t *entry = malloc((len + 1) * sizeof(wchar_t));
     if (entry == NULL) {
-        (void) printf("MEM ERR @ _parse_entries: Failed to allocate memory for entry.\n");
-        return NULL;
+        (void) printf("MEM ERR @ _parse_entry: Failed to allocate memory for entries.\n");
+        return 0;
     }
 
     // Copy substring
@@ -37,7 +37,7 @@ int _parse_entries(const wchar_t *content) {
     size_t lines = 0;
     const wchar_t *start = content;
     if (start[0] == 0xFEFF) start++;
-    const wchar_t *nl = wcsstr(start, L"\r\n"); // TODO: fix
+    const wchar_t *nl = wcsstr(start, L"\r\n");
     while (nl != NULL) {
         lines++;
         start = nl + 2; // Skip NL
@@ -46,17 +46,10 @@ int _parse_entries(const wchar_t *content) {
     if (*start != L'\0') {
         lines++;
     }
-    if (lines == 0) {
-        printf("ERR @ _parse_entries: No lines for entries.");
-        return 1;
-    }
+    // TODO: Check if lines is 0
 
     // Allocate memory for entries
-    d_entries = malloc(lines * sizeof(*d_entries));
-    if (d_entries == NULL) {
-        (void) printf("MEM ERR @ _parse_entries: Failed to allocate memory for entries.\n");
-        return 0;
-    }
+    d_entries = malloc(lines * sizeof(*d_entries)); // TODO: Check NULL
 
     // Extract lines
     start = content;
@@ -64,12 +57,7 @@ int _parse_entries(const wchar_t *content) {
     while (nl != NULL) {
         // Allocate memory for entry
         const size_t len = nl - start;
-        wchar_t *entry = _parse_entry(len, start);
-        if (entry == NULL) {
-            (void) printf("ERR @ _parse_entries: Could not parse entry.\n");
-            dispose_entries();
-            return 0;
-        }
+        wchar_t *entry = _parse_entry(len, start); // TODO: Check NULL
 
         d_entries[entries_len++] = entry;
 
@@ -80,12 +68,7 @@ int _parse_entries(const wchar_t *content) {
     // Tailing content
     if (*start != L'\0') {
         const size_t len = wcslen(start);
-        wchar_t *entry = _parse_entry(len, start);
-        if (entry == NULL) {
-            (void) printf("ERR @ _parse_entries: Could not parse entry.\n");
-            dispose_entries();
-            return 0;
-        }
+        wchar_t *entry = _parse_entry(len, start); // TODO: Check NULL
         d_entries[entries_len++] = entry;
     }
 

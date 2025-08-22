@@ -25,29 +25,18 @@ int _split_kv(struct _s_kvp *out, const wchar_t *str) {
 
     // Key
     out->len_k = eq - str;
-    out->d_k = malloc(out->len_k + 1);
-    if (out->d_k == NULL) {
-        (void) printf("MEM ERR @ _split_kv: Count not alloc mem to key.\n");
-        return 0;
-    }
     (void) wcsncpy(out->d_k, str, out->len_k);
     out->d_k[out->len_k] = L'\0';
 
     // Value
     const wchar_t *v = eq + 1;
     out->len_v = wcslen(v);
-    out->d_v = malloc(out->len_v + 1);
-    if (out->d_v == NULL) {
-        free(out->d_k);
-        (void) printf("MEM ERR @ _split_kv: Count not alloc mem to value.\n");
-        return 0;
-    }
     (void) wcscpy(out->d_v, v);
 
     return 1;
 }
 
-int _parse_conf_line(size_t len, const wchar_t *line) {
+int _parse_conf_line(const wchar_t *line) {
     // Get kvp from line
     struct _s_kvp kvp;
     if (!_split_kv(&kvp, line)) {
@@ -77,39 +66,27 @@ int _parse_conf_line(size_t len, const wchar_t *line) {
         conf.launch = launch;
     } else {
         (void) printf("ERR @ _parse_conf_line: Key '%ws' not found.\n", kvp.d_k);
-        free(kvp.d_k);
-        free(kvp.d_v);
         return 0;
     }
-    free(kvp.d_k);
-    free(kvp.d_v);
     return 1;
 }
 
-int _parse_conf_content(size_t len, wchar_t *content) {
-    if (len < 1) {
-        (void) printf("WARN @ _parse_conf_content: No content to be parsed.\n");
-        return 0;
-    }
-
+void _parse_conf_content(wchar_t *content) {
     // Read conf line by line
     int line_num = 0;
-    const wchar_t *str = wcstok(content, L"\n");
+    const wchar_t *str = wcstok(content + 1, L"\n");
     while (str != NULL) {
         line_num++;
         const size_t str_len = wcslen(str);
 
-        // Skip comments and empty line
-        if (str_len > 1 && str[0] != '#') {
-            if (!_parse_conf_line(str_len, str)) {
+        if (str_len > 2 && str[0] != L'#') {
+            if (!_parse_conf_line(str)) {
                 (void) printf("ERR @ _parse_conf_content: Error parsing configuration @ line %i.\n", line_num);
             }
         }
 
         str = wcstok(NULL, L"\n");
     }
-
-    return 1;
 }
 
 int parse_conf() {
@@ -136,11 +113,7 @@ int parse_conf() {
     }
 
     // Parse file contents
-    if (!_parse_conf_content(len, d_content)) {
-        free(d_content);
-        (void) printf("ERR @ parse_conf: An error occurred whilst parsing file '%ls'.\n", dir);
-        return 0;
-    }
+    _parse_conf_content(d_content);
 
     free(d_content);
     return 1;
