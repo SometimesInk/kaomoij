@@ -46,10 +46,18 @@ int _parse_entries(const wchar_t *content) {
     if (*start != L'\0') {
         lines++;
     }
-    // TODO: Check if lines is 0
+
+    if (lines < 1) {
+        (void) printf("ERR @ _parse_entries: No lines to parse.\n");
+        return 1;
+    }
 
     // Allocate memory for entries
-    d_entries = malloc(lines * sizeof(*d_entries)); // TODO: Check NULL
+    d_entries = malloc(lines * sizeof(*d_entries));
+    if (d_entries == NULL) {
+        (void) printf("MEM ERR @ _parse_entries: Failed to allocate memory for entries.");
+        return 0;
+    }
 
     // Extract lines
     start = content;
@@ -57,7 +65,12 @@ int _parse_entries(const wchar_t *content) {
     while (nl != NULL) {
         // Allocate memory for entry
         const size_t len = nl - start;
-        wchar_t *entry = _parse_entry(len, start); // TODO: Check NULL
+        wchar_t *entry = _parse_entry(len, start);
+        if (entry == NULL) {
+            (void) printf("ERR @ _parse_entries: Couldn't get pointer to entry.");
+            dispose_entries();
+            return 0;
+        }
 
         d_entries[entries_len++] = entry;
 
@@ -68,7 +81,13 @@ int _parse_entries(const wchar_t *content) {
     // Tailing content
     if (*start != L'\0') {
         const size_t len = wcslen(start);
-        wchar_t *entry = _parse_entry(len, start); // TODO: Check NULL
+        wchar_t *entry = _parse_entry(len, start);
+        if (entry == NULL) {
+            (void) printf("ERR @ _parse_entries: Couldn't get pointer to entry.");
+            dispose_entries();
+            return 0;
+        }
+
         d_entries[entries_len++] = entry;
     }
 

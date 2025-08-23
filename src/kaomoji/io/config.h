@@ -19,12 +19,19 @@ typedef enum e_window_display_corner {
 } t_win_corner;
 
 typedef struct s_config {
+    // Window parameters
     t_win_corner corner; // win_corner
     t_u16 width; // win_width
     t_u16 height; // win_height
     t_u16 cols; // win_cols
     t_u16 rows; // win_rows
+
+    // Keybind parameters
     t_keybind launch; // bind_launch
+    t_keybind exit; // bind_exit
+
+    // Functionality parameters
+    t_s8 hide_on_inactive; // func_hide_on_inactive
 } t_conf;
 
 extern t_conf conf;

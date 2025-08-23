@@ -7,7 +7,6 @@
 #include "../window/message.h"
 
 typedef enum _e_keybind_section {
-    ID,
     MOD,
     VK
 } _t_keybind_section;
@@ -23,5 +22,9 @@ extern int string_to_keybind(t_keybind *keybind, wchar_t *str);
 extern int register_keybind(t_keybind keybind, HWND win_handle);
 
 extern int unregister_keybind(t_keybind keybind, HWND win_handle);
+
+extern void init_keybinds(HWND win_handle);
+
+extern void dispose_keybinds(HWND win_handle);
 
 #endif //KAOMOIJ_KEYBIND_H

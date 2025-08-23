@@ -13,7 +13,9 @@
 
 t_conf conf = {
     TOP_RIGHT, 240, 120, 3, 6,
-    {1, MOD_CONTROL | MOD_ALT, 'A'}
+    {1, MOD_CONTROL | MOD_ALT, 'A'},
+    {2, MOD_CONTROL | MOD_ALT, 'E'},
+    S8_TRUE
 };
 
 int _split_kv(struct _s_kvp *out, const wchar_t *str) {
@@ -63,7 +65,13 @@ int _parse_conf_line(const wchar_t *line) {
     } else if (wcscmp(kvp.d_k, L"bind_launch") == 0) {
         t_keybind launch;
         string_to_keybind(&launch, kvp.d_v);
+        launch.id = 1;
         conf.launch = launch;
+    } else if (wcscmp(kvp.d_k, L"bind_exit") == 0) {
+        t_keybind exit;
+        string_to_keybind(&exit, kvp.d_v);
+        exit.id = 2;
+        conf.exit = exit;
     } else {
         (void) printf("ERR @ _parse_conf_line: Key '%ws' not found.\n", kvp.d_k);
         return 0;

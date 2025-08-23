@@ -20,4 +20,8 @@ add_executable(kaomoij
         src/kaomoji/io/file.c
         src/kaomoji/io/file.h
         src/kaomoji/io/entry.c
-        src/kaomoji/io/entry.h)
+        src/kaomoji/io/entry.h
+        src/kaomoji/window/toggle.c
+        src/kaomoji/window/toggle.h
+        src/kaomoji/util/clipboard.c
+        src/kaomoji/util/clipboard.h)

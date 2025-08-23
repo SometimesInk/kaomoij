@@ -2,10 +2,14 @@
 // Created by panda on 8/18/2025.
 //
 
+#include "window.h"
+
 #include <stdio.h>
 
+#include "button.h"
 #include "../io/config.h"
 #include "message.h"
+#include "../io/entry.h"
 
 const char g_szClassName[] = "windowClass";
 
@@ -74,10 +78,7 @@ int init_win(const HINSTANCE hInstance) {
     }
 
     // Register keybinds
-    if (!register_keybind(conf.launch, win_handle)) {
-        (void)printf("ERR @ init_win: Failed to register launch keybind.\n");
-        return 0;
-    }
+    init_keybinds(win_handle);
 
     // Enter window loop
     (void)printf("Ready.\n");
@@ -85,8 +86,13 @@ int init_win(const HINSTANCE hInstance) {
     _win_loop(&win_msg);
 
     // Deconstruct
-    if (unregister_keybind(conf.launch, win_handle)) {
-        (void)printf("ERR @ init_win: Failed to unregister launch keybind.\n");
-    }
+    deconstruct(win_handle);
     return win_msg.wParam;
+}
+
+void deconstruct(const HWND win_handle) {
+    dispose_buttons();
+    dispose_entries();
+    dispose_fonts();
+    dispose_keybinds(win_handle);
 }

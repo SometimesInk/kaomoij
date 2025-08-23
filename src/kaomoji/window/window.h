@@ -15,4 +15,6 @@ extern void _win_loop(MSG *win_msg);
 
 extern int init_win(HINSTANCE hInstance);
 
+extern void deconstruct(HWND win_handle);
+
 #endif //KAOMOIJ_WINDOW_H
