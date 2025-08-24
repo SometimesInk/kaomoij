@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "button.h"
+#include "scroll.h"
 #include "toggle.h"
 #include "window.h"
 #include "../io/config.h"
@@ -26,6 +27,9 @@ LRESULT CALLBACK win_proc(const HWND win_handle, const UINT win_msg, const WPARA
                 (void) printf("ERR @ init_win: Failed add buttons.\n");
             }
             break;
+        case WM_MOUSEWHEEL:
+            scroll_window(win_handle, w_param);
+            break;
         case WM_HOTKEY: {
             switch (w_param) {
                 case 1: // Launch id
@@ -41,8 +45,8 @@ LRESULT CALLBACK win_proc(const HWND win_handle, const UINT win_msg, const WPARA
                 default: ;
                     return 0;
             }
+            break;
         }
-        break;
         case WM_CLOSE:
             DestroyWindow(win_handle);
             break;

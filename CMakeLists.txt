@@ -24,4 +24,10 @@ add_executable(kaomoij
         src/kaomoji/window/toggle.c
         src/kaomoji/window/toggle.h
         src/kaomoji/util/clipboard.c
-        src/kaomoji/util/clipboard.h)
+        src/kaomoji/util/clipboard.h
+        src/kaomoji/window/scroll.c
+        src/kaomoji/window/scroll.c
+        src/kaomoji/window/scroll.h
+        src/kaomoji/util/log.c
+        src/kaomoji/util/log.c
+        src/kaomoji/util/log.h)

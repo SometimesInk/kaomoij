@@ -15,7 +15,7 @@ const char g_szClassName[] = "windowClass";
 
 int _get_win_class(WNDCLASSEX *win_class, const HINSTANCE hInstance) {
     win_class->cbSize = sizeof(WNDCLASSEX);
-    win_class->style = 0;
+    win_class->style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     win_class->lpfnWndProc = win_proc;
     win_class->cbClsExtra = 0;
     win_class->cbWndExtra = 0;
@@ -36,11 +36,11 @@ int _get_win_class(WNDCLASSEX *win_class, const HINSTANCE hInstance) {
 }
 
 int _get_win_handle(HWND *win_handle, const HINSTANCE hInstance) {
-    *win_handle = CreateWindowEx(
+    *win_handle = CreateWindowExA(
         WS_EX_CLIENTEDGE,
         g_szClassName,
         NULL,
-        WS_POPUP,
+        WS_POPUP | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, conf.width, conf.height,
         NULL, NULL, hInstance, NULL);
 
